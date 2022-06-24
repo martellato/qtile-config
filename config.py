@@ -29,9 +29,10 @@ from typing import List  # noqa: F401
 from libqtile import bar, layout, widget
 from libqtile.config import Click, Drag, Group, Key, Match, Screen
 from libqtile.lazy import lazy
+from subprocess import check_output, run
 
 mod = "mod1"
-terminal = "kitty"
+terminal = "alacritty"
 
 keys = [
     # A list of available commands that can be bound to keys can be found
@@ -74,6 +75,7 @@ keys = [
         lazy.layout.toggle_split(),
         desc="Toggle between split and unsplit sides of stack",
     ),
+    Key([mod], "t", lazy.window.toggle_floating(), desc='Toggle floating'),
     Key([mod], "Return", lazy.spawn(terminal), desc="Launch terminal"),
     # Toggle between different layouts as defined below
     Key([mod], "Tab", lazy.next_layout(), desc="Toggle between layouts"),
@@ -84,11 +86,12 @@ keys = [
         [mod],
         "p",
         lazy.spawn(
-            'dmenu_run -i -p "»" -fn "Source Code Pro" -nb "#000" -nf "#fff" -sb "#15181a" -sf "#fff"'
+            'dmenu_run -i -p "»" -nb "#000" -nf "#fff" -sf "#fff"'
         ),
         desc="Spawn a command using a prompt widget",
     ),
     Key([mod], "r", lazy.spawncmd(), desc="Spawn a command using a prompt widget"),
+    Key([mod, "shift"], "x", lazy.spawn("xlock"), desc="Spawn a command using a prompt widget"),
 ]
 
 
@@ -131,6 +134,7 @@ layout_theme = {
 layouts = [
     layout.Columns(**layout_theme),
     layout.Max(),
+    #layout.Spiral(**layout_theme),
     # Try more layouts by unleashing below layouts.
     # layout.Stack(num_stacks=2),
     # layout.Bsp(),
@@ -152,9 +156,20 @@ widget_defaults = dict(
 )
 extension_defaults = widget_defaults.copy()
 
+_xrandr_output = check_output("xrandr -q | grep connected | grep -v disconnected | awk '{{print $1}}'", shell=True, encoding="UTF-8").strip().split("\n")
+
+for monitor in _xrandr_output:
+    run(f"xrandr --auto --output {monitor}", shell=True)
+
+_number_of_screens = len(_xrandr_output)
+
+if  _number_of_screens > 1:
+    run(f"xrandr --auto --output {_xrandr_output[0]} --right-of {_xrandr_output[1]}", shell=True)
+
 screens = [
     Screen(
-        wallpaper="/home/mehran/Downloads/da232j1-2666f453-5819-4c89-9e0e-d5fa0d47b2ec.png",
+        wallpaper="/home/mehran/Downloads/fd.png",
+        wallpaper_mode="stretch",
         top=bar.Bar(
             [
                 widget.CurrentLayout(),
@@ -167,19 +182,11 @@ screens = [
                     },
                     name_transform=lambda name: name.upper(),
                 ),
-                widget.Systray(),
-                widget.CheckUpdates(
-                    update_interval=1800,
-                    distro="Arch_checkupdates",
-                    display_format=" ⟳ {updates} ",
-                    mouse_callbacks={
-                        "Button1": lambda: qtile.cmd_spawn(
-                            myTerm + " -e sudo pacman -Syu"
-                        )
-                    },
-                ),
+                widget.Bluetooth(hci='/dev_60_E3_2B_C3_32_18'),
+                # widget.Systray(),
+                widget.Battery(format=' | {char} {percent:2.0%} {hour:d}:{min:02d} {watt:.2f} W', discharge_char="🔋", charge_char="⚡", empty_char="💀"),
                 widget.Wttr(
-                    location={"Kitchener": "Waterloo"},
+                    location={"Toronto": "Toronto"},
                     format=" | %c %t(%f) %w %p %P| %m |",
                 ),
                 widget.Clock(format="%Y-%m-%d %a | %I:%M %p"),
@@ -189,8 +196,8 @@ screens = [
             # border_width=[2, 0, 2, 0],  # Draw top and bottom borders
             # border_color=["ff00ff", "000000", "ff00ff", "000000"]  # Borders are magenta
         ),
-    ),
-]
+    ) for _ in range(_number_of_screens)
+] 
 
 # Drag floating layouts.
 mouse = [
@@ -212,6 +219,7 @@ follow_mouse_focus = True
 bring_front_click = False
 cursor_warp = False
 floating_layout = layout.Floating(
+    border_focus = "#ffffff",
     float_rules=[
         # Run the utility of `xprop` to see the wm class and name of an X client.
         *layout.Floating.default_float_rules,

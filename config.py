@@ -29,7 +29,6 @@ from typing import List  # noqa: F401
 from libqtile import bar, layout, widget
 from libqtile.config import Click, Drag, Group, Key, Match, Screen
 from libqtile.lazy import lazy
-from subprocess import check_output, run
 
 mod = "mod1"
 terminal = "alacritty"
@@ -86,12 +85,36 @@ keys = [
         [mod],
         "p",
         lazy.spawn(
-            'dmenu_run -i -p "»" -nb "#000" -nf "#fff" -sf "#fff"'
+            'dmenu_run -i -p "🔎" -fn "Source Code Pro" -nb "#000" -nf "#fff" -sf "#fff"'
         ),
         desc="Spawn a command using a prompt widget",
     ),
     Key([mod], "r", lazy.spawncmd(), desc="Spawn a command using a prompt widget"),
-    Key([mod, "shift"], "x", lazy.spawn("xlock"), desc="Spawn a command using a prompt widget"),
+    Key([mod], "Print", lazy.spawn("gnome-screenshot -a"), desc="Spawn a command using a prompt widget"),
+    Key(
+        [], "XF86AudioRaiseVolume",
+        lazy.spawn("pactl -- set-sink-volume @DEFAULT_SINK@ +5%")
+    ),
+    Key(
+        [], "XF86AudioLowerVolume",
+        lazy.spawn("pactl -- set-sink-volume @DEFAULT_SINK@ -5%")
+    ),
+    Key(
+        [], "XF86AudioMute",
+        lazy.spawn("pactl -- set-sink-mute @DEFAULT_SINK@ toggle")
+    ),
+    Key(
+        [], "XF86AudioPlay",
+        lazy.spawn("playerctl play-pause")
+    ),
+    Key(
+        [], "XF86AudioNext",
+        lazy.spawn("playerctl next")
+    ),
+    Key(
+        [], "XF86AudioPrev",
+        lazy.spawn("playerctl previous")
+    ),
 ]
 
 
@@ -133,13 +156,12 @@ layout_theme = {
 
 layouts = [
     layout.Columns(**layout_theme),
+    # layout.MonadTall(**layout_theme),
     layout.Max(),
-    #layout.Spiral(**layout_theme),
     # Try more layouts by unleashing below layouts.
     # layout.Stack(num_stacks=2),
     # layout.Bsp(),
     # layout.Matrix(),
-    # layout.MonadTall(),
     # layout.MonadWide(),
     # layout.RatioTile(),
     # layout.Tile(),
@@ -156,20 +178,9 @@ widget_defaults = dict(
 )
 extension_defaults = widget_defaults.copy()
 
-_xrandr_output = check_output("xrandr -q | grep connected | grep -v disconnected | awk '{{print $1}}'", shell=True, encoding="UTF-8").strip().split("\n")
-
-for monitor in _xrandr_output:
-    run(f"xrandr --auto --output {monitor}", shell=True)
-
-_number_of_screens = len(_xrandr_output)
-
-if  _number_of_screens > 1:
-    run(f"xrandr --auto --output {_xrandr_output[0]} --right-of {_xrandr_output[1]}", shell=True)
-
 screens = [
     Screen(
-        wallpaper="/home/mehran/Downloads/fd.png",
-        wallpaper_mode="stretch",
+        wallpaper="/home/mehran/Downloads/da232j1-2666f453-5819-4c89-9e0e-d5fa0d47b2ec.png",
         top=bar.Bar(
             [
                 widget.CurrentLayout(),
@@ -182,9 +193,12 @@ screens = [
                     },
                     name_transform=lambda name: name.upper(),
                 ),
-                widget.Bluetooth(hci='/dev_60_E3_2B_C3_32_18'),
-                # widget.Systray(),
-                widget.Battery(format=' | {char} {percent:2.0%} {hour:d}:{min:02d} {watt:.2f} W', discharge_char="🔋", charge_char="⚡", empty_char="💀"),
+                widget.Systray(),
+                widget.CheckUpdates(
+                    update_interval=1800,
+                    distro="Arch_checkupdates",
+                    display_format=" | ⚙ {updates}",
+                ),
                 widget.Wttr(
                     location={"Toronto": "Toronto"},
                     format=" | %c %t(%f) %w %p %P| %m |",
@@ -196,8 +210,8 @@ screens = [
             # border_width=[2, 0, 2, 0],  # Draw top and bottom borders
             # border_color=["ff00ff", "000000", "ff00ff", "000000"]  # Borders are magenta
         ),
-    ) for _ in range(_number_of_screens)
-] 
+    ),
+]
 
 # Drag floating layouts.
 mouse = [

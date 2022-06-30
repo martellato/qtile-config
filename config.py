@@ -74,7 +74,7 @@ keys = [
         lazy.layout.toggle_split(),
         desc="Toggle between split and unsplit sides of stack",
     ),
-    Key([mod], "t", lazy.window.toggle_floating(), desc='Toggle floating'),
+    Key([mod], "t", lazy.window.toggle_floating(), desc="Toggle floating"),
     Key([mod], "Return", lazy.spawn(terminal), desc="Launch terminal"),
     # Toggle between different layouts as defined below
     Key([mod], "Tab", lazy.next_layout(), desc="Toggle between layouts"),
@@ -90,31 +90,28 @@ keys = [
         desc="Spawn a command using a prompt widget",
     ),
     Key([mod], "r", lazy.spawncmd(), desc="Spawn a command using a prompt widget"),
-    Key([mod], "Print", lazy.spawn("gnome-screenshot -a"), desc="Spawn a command using a prompt widget"),
     Key(
-        [], "XF86AudioRaiseVolume",
-        lazy.spawn("pactl -- set-sink-volume @DEFAULT_SINK@ +5%")
+        [mod],
+        "Print",
+        lazy.spawn("gnome-screenshot -a"),
+        desc="Spawn a command using a prompt widget",
     ),
     Key(
-        [], "XF86AudioLowerVolume",
-        lazy.spawn("pactl -- set-sink-volume @DEFAULT_SINK@ -5%")
+        [],
+        "XF86AudioRaiseVolume",
+        lazy.spawn("pactl -- set-sink-volume @DEFAULT_SINK@ +5%"),
     ),
     Key(
-        [], "XF86AudioMute",
-        lazy.spawn("pactl -- set-sink-mute @DEFAULT_SINK@ toggle")
+        [],
+        "XF86AudioLowerVolume",
+        lazy.spawn("pactl -- set-sink-volume @DEFAULT_SINK@ -5%"),
     ),
     Key(
-        [], "XF86AudioPlay",
-        lazy.spawn("playerctl play-pause")
+        [], "XF86AudioMute", lazy.spawn("pactl -- set-sink-mute @DEFAULT_SINK@ toggle")
     ),
-    Key(
-        [], "XF86AudioNext",
-        lazy.spawn("playerctl next")
-    ),
-    Key(
-        [], "XF86AudioPrev",
-        lazy.spawn("playerctl previous")
-    ),
+    Key([], "XF86AudioPlay", lazy.spawn("playerctl play-pause")),
+    Key([], "XF86AudioNext", lazy.spawn("playerctl next")),
+    Key([], "XF86AudioPrev", lazy.spawn("playerctl previous")),
 ]
 
 
@@ -151,7 +148,7 @@ layout_theme = {
     "border_normal": "#000000",
     "border_normal_stack": "#333333",
     "border_focus": "#ffffff",
-    "border_focus_stack": "#aaaaaa"
+    "border_focus_stack": "#aaaaaa",
 }
 
 layouts = [
@@ -194,16 +191,23 @@ screens = [
                     name_transform=lambda name: name.upper(),
                 ),
                 widget.Systray(),
+                widget.Sep(),
                 widget.CheckUpdates(
                     update_interval=1800,
                     distro="Arch_checkupdates",
-                    display_format=" | ⚙ {updates}",
+                    display_format=" ⚙ {updates}",
                 ),
+                widget.Sep(),
+                widget.PulseVolume(emoji=False),
+                widget.Sep(),
                 widget.Wttr(
                     location={"Toronto": "Toronto"},
-                    format=" | %c %t(%f) %w %p %P| %m |",
+                    format="%c %t(%f) %w %p %P (%m) ",
                 ),
-                widget.Clock(format="%Y-%m-%d %a | %I:%M %p"),
+                widget.Sep(),
+                widget.Clock(format="%Y-%m-%d %a"),
+                widget.Sep(),
+                widget.Clock(format="%I:%M %p"),
                 widget.QuickExit(),
             ],
             24,
@@ -233,7 +237,7 @@ follow_mouse_focus = True
 bring_front_click = False
 cursor_warp = False
 floating_layout = layout.Floating(
-    border_focus = "#ffffff",
+    border_focus="#ffffff",
     float_rules=[
         # Run the utility of `xprop` to see the wm class and name of an X client.
         *layout.Floating.default_float_rules,
@@ -243,7 +247,7 @@ floating_layout = layout.Floating(
         Match(wm_class="ssh-askpass"),  # ssh-askpass
         Match(title="branchdialog"),  # gitk
         Match(title="pinentry"),  # GPG key password entry
-    ]
+    ],
 )
 auto_fullscreen = True
 focus_on_window_activation = "smart"
